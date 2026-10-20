@@ -2,4 +2,7 @@
     <string name="app_name">WeatherApp</string>
     <string name="hint_search">Search city</string>
     <string name="hourly_forecast">Hourly forecast</string>
+    <string name="error_city_not_found">City not found. Check the spelling and try again.</string>
+    <string name="error_network">Can\'t reach the weather service. Check your connection.</string>
+    <string name="error_generic">Something went wrong. Try again.</string>
 </resources>

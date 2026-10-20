@@ -51,6 +51,17 @@
                 android:textColorHint="@color/text_secondary" />
 
             <TextView
+                android:id="@+id/tvError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:textColor="#FF8A80"
+                android:textSize="13sp"
+                android:visibility="gone"
+                tools:text="City not found." />
+
+            <TextView
                 android:id="@+id/tvCity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -162,4 +173,13 @@
 
         </LinearLayout>
     </ScrollView>
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/text_primary"
+        android:visibility="gone" />
+
 </FrameLayout>
