@@ -14,12 +14,21 @@ import android.animation.PropertyValuesHolder
 import android.animation.ValueAnimator
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.animation.ArgbEvaluator
+import android.content.res.ColorStateList
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.TransitionDrawable
+import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val hourAdapter = HourAdapter()
     private val loopAnimators = mutableListOf<Animator>()
+    private var currentMood = Mood.SUNNY
+    private var currentBg: Drawable? = null
+    private var currentGlow = 0
+    private var shownTemp = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
@@ -43,6 +52,14 @@ class MainActivity : AppCompatActivity() {
         startGlowPulse()
         startIconFloat()
         animateTemperature(31)
+
+        currentBg = ContextCompat.getDrawable(this, Mood.SUNNY.background)
+        currentGlow = ContextCompat.getColor(this, Mood.SUNNY.glow)
+
+        binding.ivWeather.setOnClickListener {
+            val moods = Mood.entries
+            applyMood(moods[(currentMood.ordinal + 1) % moods.size])
+        }
     }
 
     private fun showPlaceholder() {
@@ -96,11 +113,47 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun animateTemperature(target: Int) {
-        ValueAnimator.ofInt(0, target).apply {
+        ValueAnimator.ofInt(shownTemp, target).apply {
             duration = 900
-            addUpdateListener { binding.tvTemp.text = "${it.animatedValue}°C" }
+            addUpdateListener {
+                shownTemp = it.animatedValue as Int
+                binding.tvTemp.text = "$shownTemp°C"
+            }
             start()
         }
+    }
+
+
+
+    private fun applyMood(mood: Mood) {
+        currentMood = mood
+
+        val next = ContextCompat.getDrawable(this, mood.background)!!
+        val transition = TransitionDrawable(arrayOf(currentBg ?: next, next))
+        binding.main.background = transition
+        transition.startTransition(700)
+        currentBg = next
+
+        val toGlow = ContextCompat.getColor(this, mood.glow)
+        ValueAnimator.ofObject(ArgbEvaluator(), currentGlow, toGlow).apply {
+            duration = 700
+            addUpdateListener {
+                binding.glow.imageTintList = ColorStateList.valueOf(it.animatedValue as Int)
+            }
+            start()
+        }
+        currentGlow = toGlow
+
+        binding.ivWeather.animate().alpha(0f).setDuration(250).withEndAction {
+            binding.ivWeather.setImageResource(mood.icon)
+            binding.ivWeather.imageTintList = ColorStateList.valueOf(mood.iconTint)
+            binding.ivWeather.animate().alpha(1f).setDuration(350).start()
+        }.start()
+
+        binding.tvDesc.text = mood.desc
+        binding.tvWind.text = mood.wind
+        binding.tvHumidity.text = mood.humidity
+        animateTemperature(mood.temp)
     }
 
     private fun playEntrance() {
